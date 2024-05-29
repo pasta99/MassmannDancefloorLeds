@@ -6,4 +6,4 @@ class LEDDisplay:
         self.pins = pins
 
     def show(self, array):
-        print(array[0, 0])
+        print(array[0, 1])

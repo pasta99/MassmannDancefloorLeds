@@ -1,11 +1,12 @@
 import numpy as np
 import time
 
-from PatternGenerator import PatternGeneratorSolid
+from PatternGenerator import PatternGeneratorSolid, PatternGeneratorWave
 from LEDDisplay import LEDDisplay
 
 MIN_BPM = 50
 MAX_BPM = 250
+DEFAULT_BPM = 100
 
 FRAME_RATE = 1/20
 
@@ -14,11 +15,13 @@ LEDS_PER_STRIPE = 60 * 4
 
 DEFAULT_COLOR = [255, 0, 0]
 
+possible_generators = [PatternGeneratorSolid, PatternGeneratorWave]
+
 class Controller: 
 
     def __init__(self) -> None:
+        self.set_generator(0)
         self.brightness = 0.5
-        self.bpm = 0
         self.set_speed(0.5)
         self.on = True
         self.color = DEFAULT_COLOR
@@ -27,12 +30,18 @@ class Controller:
 
         self.strobo = False
 
-        self.generator = PatternGeneratorSolid(NUM_STRIPES, LEDS_PER_STRIPE, self.color, self.bpm)
 
         self.display = LEDDisplay(None)
 
+    def set_generator(self, id):
+        if id > len(possible_generators): 
+            print("ID out of range")
+            id = 0
+        self.generator = possible_generators[id](NUM_STRIPES, LEDS_PER_STRIPE)
+
     def set_speed(self, relative_speed):
         self.bpm = np.interp(relative_speed, [0, 1], [MIN_BPM, MAX_BPM])
+        self.generator.set_bpm(self.bpm)
         print(f"New bpm: {self.bpm}")
 
     def set_brightness(self, brightness):
@@ -60,7 +69,7 @@ class Controller:
         pass
 
     def set_mode(self, mode_id):
-        pass
+        self.set_generator(mode_id)
 
     def error(self):
         print("ERROR")
@@ -68,7 +77,7 @@ class Controller:
     def main_loop(self):
         while True:
             if self.on:
-                frame = self.generator.get_frame(self.t)
+                frame = self.generator.next_frame(self.dt)
                 self.display.show(frame)
             time.sleep(FRAME_RATE)
             self.t += FRAME_RATE
