@@ -14,7 +14,7 @@ class PatternGeneratorBase:
         self.t = 0
         self.set_color([255, 0, 0])
         self.color_mode = ColorMode.SET
-        self.bpm = self.set_bpm(100)
+        self.set_bpm(100)
 
         self.last_color_change = 0
 
@@ -37,7 +37,7 @@ class PatternGeneratorBase:
     def change_color_if_necessary(self):
         if self.color_mode == ColorMode.RANDOM:
             if self.t - self.last_color_change > self.color_change_interval:
-                self.last_color_change = t
+                self.last_color_change = self.t
                 self.color = [randint(0, 255) for _ in range(3)]
         else: 
             self.color 
@@ -64,7 +64,7 @@ class PatternGeneratorWave(PatternGeneratorBase):
         self.array[:, :, 0:3] = self.color
 
         brightness = np.arange(0, self.leds_per_stripe)
-        sin_lambda = lambda x: (np.sin(x / 4) + 1) / 2
+        sin_lambda = lambda x: (np.sin(x / 4 + self.t * self.bpm / 10) + 1) / 2
         func = np.vectorize(sin_lambda)
 
         brightness = func(brightness)

@@ -1,8 +1,9 @@
 import numpy as np
 import time
+import board
 
 from PatternGenerator import PatternGeneratorSolid, PatternGeneratorWave
-from LEDDisplay import LEDDisplay
+from LEDDisplay import LEDDisplay, LEDDisplayReal
 
 MIN_BPM = 50
 MAX_BPM = 250
@@ -10,10 +11,12 @@ DEFAULT_BPM = 100
 
 FRAME_RATE = 1/20
 
-NUM_STRIPES = 10
-LEDS_PER_STRIPE = 60 * 4
+NUM_STRIPES = 1 #10
+LEDS_PER_STRIPE = 30 # 60 * 4
 
 DEFAULT_COLOR = [255, 0, 0]
+
+DATA_PIN = board.D18
 
 possible_generators = [PatternGeneratorSolid, PatternGeneratorWave]
 
@@ -31,7 +34,7 @@ class Controller:
         self.strobo = False
 
 
-        self.display = LEDDisplay(None)
+        self.display = LEDDisplayReal(DATA_PIN, NUM_STRIPES, LEDS_PER_STRIPE)
 
     def set_generator(self, id):
         if id > len(possible_generators): 
@@ -64,6 +67,8 @@ class Controller:
 
     def set_on(self, on):
         self.on = on
+        if self.on == False:
+            self.display.clear_all()
 
     def set_strobo(self, on):
         pass
@@ -77,7 +82,7 @@ class Controller:
     def main_loop(self):
         while True:
             if self.on:
-                frame = self.generator.next_frame(self.dt)
+                frame = self.generator.next_frame(FRAME_RATE)
                 self.display.show(frame)
             time.sleep(FRAME_RATE)
             self.t += FRAME_RATE
