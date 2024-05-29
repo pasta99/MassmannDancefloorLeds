@@ -1,7 +1,8 @@
 import numpy as np
 import time
 
-from PatternGenerator import PatternGenerator
+from PatternGenerator import PatternGeneratorSolid
+from LEDDisplay import LEDDisplay
 
 MIN_BPM = 50
 MAX_BPM = 250
@@ -22,7 +23,13 @@ class Controller:
         self.on = True
         self.color = DEFAULT_COLOR
 
-        self.generator = PatternGenerator(NUM_STRIPES, LEDS_PER_STRIPE, self.color, self.bpm)
+        self.t = 0
+
+        self.strobo = False
+
+        self.generator = PatternGeneratorSolid(NUM_STRIPES, LEDS_PER_STRIPE, self.color, self.bpm)
+
+        self.display = LEDDisplay(None)
 
     def set_speed(self, relative_speed):
         self.bpm = np.interp(relative_speed, [0, 1], [MIN_BPM, MAX_BPM])
@@ -44,6 +51,7 @@ class Controller:
 
     def set_color_mode(self, mode):
         self.generator.set_color_mode(mode)
+        self.generator.set_color(self.color)
 
     def set_on(self, on):
         self.on = on
@@ -60,8 +68,10 @@ class Controller:
     def main_loop(self):
         while True:
             if self.on:
-                print(".")
+                frame = self.generator.get_frame(self.t)
+                self.display.show(frame)
             time.sleep(FRAME_RATE)
+            self.t += FRAME_RATE
  
 if __name__ == "__main__":
     c = Controller()
