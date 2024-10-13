@@ -40,7 +40,8 @@ class MQTTListener:
             "leds/color/mode": self.handle_color_mode,
             "leds/toggle": self.handle_toggle, 
             "leds/strobo": self.handle_strobo,
-            "leds/mode": self.handle_mode
+            "leds/mode": self.handle_mode,
+            "leds/beat": self.handle_beat
         }
     
         self.subscribe()
@@ -85,6 +86,9 @@ class MQTTListener:
         except:
             print("Could not decode a number. Abort!")
 
+    def handle_beat(self, msg):
+        self.controller.beat()
+
     def handle_color_mode(self, msg):
         txt = msg.payload.decode()
         if txt == "set":
@@ -102,17 +106,18 @@ class MQTTListener:
     def handle_strobo(self, msg):
         txt = msg.payload.decode()
         if txt == "on":
-            self.controller.strobo(True)
+            self.controller.set_strobo(True)
         elif txt == "off":
-            self.controller.strobo(False)
+            self.controller.set_strobo(False)
 
     def handle_mode(self, msg):
         txt = msg.payload.decode()
         try:
             id = int(float(txt))
-            self.controller.set_mode(id)
         except:
             print("Could not decode a number. Abort!")
+        print(f"New mode {id}")
+        self.controller.set_mode(id)
 
     def on_message(self, client, userdata, msg):
         for topic, action in self.topics_action.items():

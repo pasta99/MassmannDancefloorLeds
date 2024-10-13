@@ -1,6 +1,8 @@
 import board
 import neopixel
-pixels = neopixel.NeoPixel(board.D18, 100, brightness=0.0, pixel_order=neopixel.GRBW)
+import time
 
-pixels.fill((0, 0, 0, 0))
-pixels.show()
+pixel_num  = 12 * 80
+pixels = neopixel.NeoPixel(board.D18, pixel_num, brightness=.3, pixel_order=neopixel.GRB)
+
+pixels.fill((0, 0, 0))
