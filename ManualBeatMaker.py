@@ -20,7 +20,7 @@ class ManualBeatMaker:
     def main_loop(self):
         while True: 
             while (self.running):
-                self.callback()
-                # print("Sent beat")
+                self.callback(self.waiting_time)
+                print("Sent beat")
                 time.sleep(self.waiting_time)
             time.sleep(1/20)

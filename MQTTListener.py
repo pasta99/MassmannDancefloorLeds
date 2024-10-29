@@ -69,6 +69,7 @@ class MQTTListener:
             r = float(msg.payload.decode())
             r = max(0, min(r, 1))
             self.controller.set_r(r)
+            print(r)
         except:
             print("Could not decode a number. Abort!")
     def handle_g(self, msg):
@@ -87,7 +88,12 @@ class MQTTListener:
             print("Could not decode a number. Abort!")
 
     def handle_beat(self, msg):
-        self.controller.beat()
+        try: 
+            message_content = msg.payload.decode()
+            bpm = int(message_content)
+            self.controller.beat(bpm)
+        except ValueError:
+            print("Could not decode a number. Abort!")
 
     def handle_color_mode(self, msg):
         txt = msg.payload.decode()
