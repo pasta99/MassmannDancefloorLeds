@@ -2,9 +2,9 @@ from paho.mqtt import client as mqtt_client
 
 from PatternGenerator import ColorMode
 
-broker = '10.42.0.1'
+broker = '10.151.250.126'
 port = 1883
-client_id = f'raspi'
+client_id = f'raspi-ledcontroller'
 username = 'bewohner'
 password = 'keinbewohner'
 
@@ -41,7 +41,8 @@ class MQTTListener:
             "leds/toggle": self.handle_toggle, 
             "leds/strobo": self.handle_strobo,
             "leds/mode": self.handle_mode,
-            "leds/beat": self.handle_beat
+            "leds/beat": self.handle_beat,
+            "leds/mode/advance": self.handle_mode_advance
         }
     
         self.subscribe()
@@ -69,7 +70,6 @@ class MQTTListener:
             r = float(msg.payload.decode())
             r = max(0, min(r, 1))
             self.controller.set_r(r)
-            print(r)
         except:
             print("Could not decode a number. Abort!")
     def handle_g(self, msg):
@@ -90,7 +90,7 @@ class MQTTListener:
     def handle_beat(self, msg):
         try: 
             message_content = msg.payload.decode()
-            bpm = int(message_content)
+            bpm = float(message_content)
             self.controller.beat(bpm)
         except ValueError:
             print("Could not decode a number. Abort!")
@@ -124,6 +124,13 @@ class MQTTListener:
             print("Could not decode a number. Abort!")
         print(f"New mode {id}")
         self.controller.set_mode(id)
+
+    def handle_mode_advance(self, msg):
+        txt = msg.payload.decode()
+        if txt == "+":
+            self.controller.advance_mode(1)
+        else: 
+            self.controller.advance_mode(-1)
 
     def on_message(self, client, userdata, msg):
         for topic, action in self.topics_action.items():

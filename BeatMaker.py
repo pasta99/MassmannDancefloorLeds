@@ -5,7 +5,7 @@ port = 1883
 client_id = f'beatmaker22'
 username = 'bewohner'
 password = 'keinbewohner'
-broker = '10.42.0.1'
+broker = '10.151.250.126'
 
 def connect_mqtt(on_connect):
     client = mqtt_client.Client(client_id=client_id, callback_api_version=mqtt_client.CallbackAPIVersion.VERSION2)
@@ -64,7 +64,7 @@ class BeatMaker:
         while True: 
             while (self.running):
                 self.send_beat()
-                print(f"Sent beat BPM: {self.bpm} Waittime: {self.waiting_time}")
+                # print(f"Sent beat BPM: {self.bpm} Waittime: {self.waiting_time}")
                 time.sleep(self.waiting_time)
                 self.client.loop()
             self.client.loop()
@@ -73,19 +73,3 @@ class BeatMaker:
 import threading
 if __name__ == "__main__":
     b = BeatMaker()
-
-# import paho.mqtt.client as mqtt
-
-# def on_message(client, userdata, msg):
-#     print(msg.payload.decode())
-
-# def on_connect(client, userdata, flags, rc):
-#     print("Connected! Result code: " + str(rc))
-#     client.subscribe("leds/beat/auto/deactivate/")
-
-# client = mqtt.Client(client_id=client_id)
-# client.on_connect = on_connect
-# client.on_message = on_message
-# client.username_pw_set(username=username, password=password)
-# client.connect(broker, port)
-# client.loop_forever()

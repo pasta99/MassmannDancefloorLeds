@@ -3,7 +3,7 @@ import time
 import board
 import threading
 
-from PatternGenerator import PatternGeneratorTimingTest, PatternGeneratorSolid, PatternGeneratorWave, PatternGeneratorStrobo, ColorMode, PatternGeneratorBeams, PatternGeneratorHorizontalWave, PatternGeneratorTwoBeams, PatternGeneratorLighthouse, PatternGeneratorSpots
+from PatternGenerator import PatterGeneratorSwitch2, PatterGeneratorSwitch, PatternGeneratorZoomAlt, PatternGeneratorZoomAlt2, PatterGeneratorDrop, PatternGeneratorZoom, PatternGeneratorRotate, PatternGeneratorSolid, PatternGeneratorWave, PatternGeneratorStrobo, ColorMode, PatternGeneratorBeams, PatternGeneratorHorizontalWave, PatternGeneratorTwoBeams, PatternGeneratorSpeakers, PatternGeneratorSpots
 from LEDDisplay import LEDDisplay, LEDDisplayReal
 from ManualBeatMaker import ManualBeatMaker
 
@@ -19,13 +19,14 @@ DEFAULT_COLOR = [255, 0, 0]
 
 DATA_PIN = board.D18
 
-possible_generators = [PatternGeneratorTimingTest, PatternGeneratorBeams, PatternGeneratorHorizontalWave, PatternGeneratorTwoBeams, PatternGeneratorLighthouse, PatternGeneratorSpots]
+possible_generators = [PatternGeneratorZoom, PatternGeneratorTwoBeams, PatternGeneratorSpots, PatterGeneratorSwitch2, PatternGeneratorRotate, PatterGeneratorSwitch, PatternGeneratorHorizontalWave, PatternGeneratorZoomAlt2, PatternGeneratorBeams, PatternGeneratorSpeakers, PatternGeneratorZoomAlt, PatterGeneratorDrop]
 
 class Controller: 
 
     def __init__(self) -> None:
         self.color = DEFAULT_COLOR
-        self.generator = possible_generators[1](NUM_STRIPES, LEDS_PER_STRIPE)
+        self.mode_id = 0
+        self.generator = possible_generators[0](NUM_STRIPES, LEDS_PER_STRIPE)
         self.brightness = 0.5
         self.on = True
         self.t = 0
@@ -39,18 +40,19 @@ class Controller:
         
         # self.beat_maker = ManualBeatMaker(self.beat, self.bpm)
         # threading.Thread(target=self.beat_maker.main_loop).start()
-        self.set_speed(0.5)
+        # self.set_speed(0.5)
         
 
     def set_generator(self, id):
         if id >= len(possible_generators): 
             print("ID out of range")
             id = 0
+        print(f"Setting mode id: {id}")
         self.generator = possible_generators[id](NUM_STRIPES, LEDS_PER_STRIPE)
         self.generator.set_color(self.color)
         self.generator.set_color_mode(self.color_mode)
-        self.generator.set_bpm(self.bpm)
-        self.generator.set_speed(self.relative_speed)
+        # self.generator.set_bpm(self.bpm)
+        # self.generator.set_speed(self.relative_speed)
 
     def set_speed(self, relative_speed):
         self.relative_speed = relative_speed
@@ -91,6 +93,13 @@ class Controller:
     def set_mode(self, mode_id):
         self.set_generator(mode_id)
 
+    def advance_mode(self, advance):
+        end = len(possible_generators) - 1
+        start = 0
+        range_size = end - start + 1  # Calculate the range size
+        self.mode_id = ((self.mode_id + advance) - start) % range_size + start
+        self.set_mode(self.mode_id)
+
     def error(self):
         print("ERROR")
 
@@ -100,10 +109,10 @@ class Controller:
     def main_loop(self):
         while True:
             if self.on:
+                start_time = time.time()
                 frame = self.generator.next_frame(FRAME_RATE)
                 if self.strobo:
                     frame = self.strobo_generator.next_frame(FRAME_RATE)
-                start_time = time.time()
                 self.display.show(frame, strobo=self.strobo)
                 end_time = time.time()
 
